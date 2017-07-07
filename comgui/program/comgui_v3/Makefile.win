@@ -1,0 +1,45 @@
+# Project: comgui_v3
+# Makefile created by Dev-C++ 5.11
+
+CPP      = g++.exe -D__DEBUG__
+CC       = gcc.exe -D__DEBUG__
+WINDRES  = windres.exe
+RES      = object/comgui_v3_private.res
+OBJ      = object/dchain.o object/dxml.o object/clayout.o object/main.o object/cplatform.o $(RES)
+LINKOBJ  = object/dchain.o object/dxml.o object/clayout.o object/main.o object/cplatform.o $(RES)
+LIBS     = -L"D:/apps/Dev-Cpp/MinGW64/lib" -L"D:/apps/Dev-Cpp/MinGW64/x86_64-w64-mingw32/lib" -static-libgcc -lgdi32 -g3 -mwindows
+INCS     = -I"D:/apps/Dev-Cpp/MinGW64/include" -I"D:/apps/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"D:/apps/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include"
+CXXINCS  = -I"D:/apps/Dev-Cpp/MinGW64/include" -I"D:/apps/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"D:/apps/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include" -I"D:/apps/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include/c++"
+BIN      = binary/comgui_v3.exe
+CXXFLAGS = $(CXXINCS) -g3 -mwindows -std=gnu++14
+CFLAGS   = $(INCS) -g3 -mwindows -std=gnu++14
+RM       = rm.exe -f
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before $(BIN) all-after
+
+clean: clean-custom
+	${RM} $(OBJ) $(BIN)
+
+$(BIN): $(OBJ)
+	$(CPP) $(LINKOBJ) -o $(BIN) $(LIBS)
+
+object/dchain.o: source/dchain.cpp
+	$(CPP) -c source/dchain.cpp -o object/dchain.o $(CXXFLAGS)
+
+object/dxml.o: source/dxml.cpp
+	$(CPP) -c source/dxml.cpp -o object/dxml.o $(CXXFLAGS)
+
+object/clayout.o: source/clayout.cpp
+	$(CPP) -c source/clayout.cpp -o object/clayout.o $(CXXFLAGS)
+
+object/main.o: source/main.cpp
+	$(CPP) -c source/main.cpp -o object/main.o $(CXXFLAGS)
+
+object/cplatform.o: source/cplatform.cpp
+	$(CPP) -c source/cplatform.cpp -o object/cplatform.o $(CXXFLAGS)
+
+object/comgui_v3_private.res: comgui_v3_private.rc 
+	$(WINDRES) -i comgui_v3_private.rc --input-format=rc -o object/comgui_v3_private.res -O coff  --include-dir D:/DN/Object/comgui/program/COMGUI~2/source
+

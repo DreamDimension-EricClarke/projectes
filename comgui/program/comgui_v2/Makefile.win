@@ -1,0 +1,45 @@
+# Project: comgui_v2
+# Makefile created by Dev-C++ 5.11
+
+CPP      = g++.exe -D__DEBUG__
+CC       = gcc.exe -D__DEBUG__
+WINDRES  = windres.exe
+RES      = object/comgui_v2_private.res
+OBJ      = object/main.o object/layoutlexer.o object/dxml.o object/dream.o object/commport.o $(RES)
+LINKOBJ  = object/main.o object/layoutlexer.o object/dxml.o object/dream.o object/commport.o $(RES)
+LIBS     = -L"D:/apps/Dev-Cpp/MinGW64/lib" -L"D:/apps/Dev-Cpp/MinGW64/x86_64-w64-mingw32/lib" -static-libgcc -std=gnu++14 -lopengl32 -lglu32 -lgdi32 -mwindows -lgdi32 -g3 -mwindows
+INCS     = -I"D:/apps/Dev-Cpp/MinGW64/include" -I"D:/apps/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"D:/apps/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include"
+CXXINCS  = -I"D:/apps/Dev-Cpp/MinGW64/include" -I"D:/apps/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"D:/apps/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include" -I"D:/apps/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include/c++"
+BIN      = binary/comgui_v2.exe
+CXXFLAGS = $(CXXINCS) -g3 -mwindows
+CFLAGS   = $(INCS) -g3 -mwindows
+RM       = rm.exe -f
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before $(BIN) all-after
+
+clean: clean-custom
+	${RM} $(OBJ) $(BIN)
+
+$(BIN): $(OBJ)
+	$(CPP) $(LINKOBJ) -o $(BIN) $(LIBS)
+
+object/main.o: source/main.cpp
+	$(CPP) -c source/main.cpp -o object/main.o $(CXXFLAGS)
+
+object/layoutlexer.o: source/layoutlexer.cpp
+	$(CPP) -c source/layoutlexer.cpp -o object/layoutlexer.o $(CXXFLAGS)
+
+object/dxml.o: source/dxml.cpp
+	$(CPP) -c source/dxml.cpp -o object/dxml.o $(CXXFLAGS)
+
+object/dream.o: source/dream.cpp
+	$(CPP) -c source/dream.cpp -o object/dream.o $(CXXFLAGS)
+
+object/commport.o: source/commport.cpp
+	$(CPP) -c source/commport.cpp -o object/commport.o $(CXXFLAGS)
+
+object/comgui_v2_private.res: comgui_v2_private.rc 
+	$(WINDRES) -i comgui_v2_private.rc --input-format=rc -o object/comgui_v2_private.res -O coff  --include-dir D:/DN/Object/comgui/program/COMGUI~1/source
+

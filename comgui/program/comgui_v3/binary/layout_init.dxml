@@ -1,0 +1,88 @@
+<!-- layout_init 定义了初始化界面的布局 -->
+<!-- 布局语法:
+	元素:
+		layout	布局		应为布局文件的根元素 
+			特有属性: minimizebox(true) maxmizebox(true) icon(%s)
+			
+		text	文本控件	可编辑或不可编辑的文本(文本内容用元素内容定义) 
+			特有属性: align(left center right) multiline(true) readonly(true) text-size(%d)
+			
+		button	按钮控件	可以相应按钮的点击事件
+		
+		group	组框控件	把一系列相关的控件包含起来
+		
+		list	列表控件	静态的把项目序列显示出来可供选择 
+			特有属性: border(true) vscroll(true)
+			item	项目单元	列表控件的子项
+				特有属性: value(%s)
+		combobox组合框控件	有可编辑的文本框和可选择的下拉选单
+			option	选项单元	组合框控件的子项 
+				特有属性: value(%s)
+	属性规则:
+		共有属性:
+			x(%d) y(%d) width(%d) height(%d) caption(%s)
+		特殊属性:
+			name(%s)	name属性将控件的窗口句柄和窗口ID相关联,用于从线型列表相应控件消息 
+--> 
+<layout x='128' y='128' width='384' height='284' caption='智能农业监测系统' minimizebox='true' icon='comgui' close='false'>
+	<text x='12' y='2' width='360' height='28' 
+	readonly='true' align='center' text-size='28'>系统初始化</text>
+	
+	<text x='32' y='32' width='128' height='24'
+	readonly='true'>串口波特率(bps)</text>
+	
+	<combobox x='32' y='64' width='128' height='512' name='combo_baudrate'>
+		<option value='300'		></option>
+		<option value='600'		></option>
+		<option value='1200'	></option>
+		<option value='2400'	></option>
+		<option value='4800'	></option>
+		<option value='9600'	></option>
+		<option value='19200'	></option>
+		<option value='38400'	></option>
+		<option value='43000'	></option>
+		<option value='56000'	></option>
+		<option value='57600'	></option>
+		<option value='115200'	></option>
+	</combobox>
+	
+	<text x='32' y='96' width='128' height='24'
+	readonly='true'>数据位数(bits)</text>
+	
+	<combobox x='32' y='128' width='128' height='512' name='combo_bytesize'>
+		<option value='7'	></option>
+		<option value='8'	></option>
+		<option value='9'	></option>
+	</combobox>
+	
+	<text x='32' y='160' width='128' height='24'
+	readonly='true'>停止位数(bits)</text>
+	
+	<combobox x='32' y='192' width='128' height='512' name='combo_stopbits'>
+		<option value='1'	></option>
+		<option value='1.5'	></option>
+		<option value='2'	></option>
+	</combobox>
+	
+	<text x='224' y='32' width='128' height='24'
+	readonly='true'>刷新间隔(ms)</text> 
+	
+	<text x='224' y='64' width='128' height='24'
+	name='edit_block'>0</text>
+	 
+	<button x='224' y='96' width='128' height='24'
+	name='button_loaddef' caption='加载默认值' name='button_load'></button>
+	 
+	<button x='224' y='128' width='128' height='24'
+	name='button_setdef' caption='设为默认值' name='button_set'></button>
+	
+	<button x='224' y='160' width='128' height='24'
+	name='button_setdef' caption='启动' name='button_yes'></button>
+	
+	<button x='224' y='192' width='128' height='24'
+	name='button_setdef' caption='退出' name='button_no'></button>
+	
+	<text x='48' y='224' width='288' height='20' 
+	readonly='true' text-size='16' align='center'>沈阳航空航天大学版权所有</text> 
+	
+</layout>

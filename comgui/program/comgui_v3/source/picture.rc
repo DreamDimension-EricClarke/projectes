@@ -1,0 +1,4 @@
+"background"	BITMAP	background.bmp
+"caption"		BITMAP	caption.bmp
+"comgui"		ICON	comgui.ico
+"icon"			BITMAP	ico.bmp

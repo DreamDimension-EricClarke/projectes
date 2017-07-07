@@ -1,0 +1,30 @@
+< item_lexer帮助 >
+	< 总览 >
+item_lexer类总体上有两部分功能
+ ->阅读item code并生成item列表
+ ->将item列表中的数据转换成item code代码
+	</总览>
+这两项功能可以应用在一下场景:
+ 为程序制定方便修改的配置文件
+ 克服跨平台或跨网域传输数据的困难
+
+*item code 代码语法:
+item code 以item为单位在文档中用字符描述各种类型的数据
+	item语法:    ( type ) [ class:name ] value ;
+type描述了此item所携带的数据的类型,不区分大小写,可取值如下:
+boolean 逻辑型,对应value取值为false或true不区分大小写.
+	例: ( boolean )[ default:bool ] false;
+byte	字节型,对应value是一组任意个数的两位十六进制数,不区分大小写:
+	例:( byte )[ default:buffer ] 33 1E 2F 09 00;
+hex	整数型,对应value是一个16位一下十六进制数:
+	例( hex )[ default:long-long ] 33ea2218f7e92a9c;
+none	空类型,value不能包含任何数据:
+	例(none)[ default:none ] ;
+number	实数类型,对应value应该为十进制实数:
+	例( number )[ default:number ] 3.1415926 ;
+class	被称为类域,是name所属的区域
+name	是名称,一个元素真正的名字
+class:name组合在一起被称为label,label中不能包含任何括号,不能包含空格和被认为不符合语法的字符
+除此之外label中可以包含任何你有办法输入的字符
+
+非法字符: ~  `   {  }   |   ,  =  +  ^  !  ?  "

@@ -1,0 +1,64 @@
+<!-- dxml version=1.0 -->
+<window caption='ComGUI_v2' left='128' top='24' width='1024' height='720' icon='comgui' >
+	<text 
+		left='24' top='24' width='976' height='104' 
+		align='center' text-size='72'>智能农业监测系统</text>
+	<group
+		left='24' top='130' width='640' height='512'
+		caption='实时监控'>
+			<list
+				left='8' top='28' width='128' height='480'
+				border='true' name='dev_list'>
+					<item value='A园区北'></item>
+					<item value='A园区南'></item>
+					<item value='A园区东'></item>
+					<item value='B园区'></item>
+			</list>
+				<group
+					left='144' top='28' width='480' height='64'
+					caption='温度数据'>
+						<text left='16' top='28' width='128' height='28'
+						name='text_temprature'>当前温度数据</text>
+				</group>
+				<group
+					left='144' top='108' width='480' height='64'
+					caption='湿度数据'>
+						<text left='16' top='28' width='128' height='28'
+						name='text_wetness'>当前湿度数据</text>
+				</group>
+				<group
+					left='144' top='188' width='480' height='64'
+					caption='灯光数据'>
+						<text left='16' top='28' width='128' height='28'
+						name='text_lamp'>当前灯光数据</text>
+						<button left='182' top='28' width='64' height='28'
+						name='lamp_btn' caption='开灯'></button>
+				</group>
+				<group
+					left='144' top='268' width='480' height='64'
+					caption='烟雾数据'>
+						<text left='16' top='28' width='128' height='28'
+						name='text_smoke'>当前烟雾数据</text>
+				</group>
+	</group>
+	<group
+		left='680' top='130' width='320' height='320'
+		caption='运行日志'>
+			<text left='8' top='28' width='302' height='280' multiline='true' name='text_log'>初始化...</text> 
+	</group>
+	<group
+		left='680' top='460' width='320' height='182'
+		caption='主控制面板'>
+			<button
+				left='220' top='31' width='80' height='38'
+				caption='启动' name='button_st'></button>
+			<button
+				left='220' top='72' width='80' height='38'
+				caption='刷新' name='button_refresh'></button>
+				
+			<!-- 此文本显示端口号及端口参数 --> 
+			<text
+				left='20' top='31' width='180' height='128'
+				align='center' multiline='true' name='text_comm'>端口尚未连接</text>
+		</group>
+</window>

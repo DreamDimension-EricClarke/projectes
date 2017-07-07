@@ -1,0 +1,39 @@
+# Project: vittor_dtu_set_cpp
+# Makefile created by Dev-C++ 5.11
+
+CPP      = g++.exe
+CC       = gcc.exe
+WINDRES  = windres.exe
+RES      = Object/vittor_dtu_set_cpp_private.res
+OBJ      = Object/Device.o Object/main.o Object/Layout.o $(RES)
+LINKOBJ  = Object/Device.o Object/main.o Object/Layout.o $(RES)
+LIBS     = -L"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/lib32" -static-libgcc -lws2_32 -lgdi32 -m32 -mwindows
+INCS     = -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include"
+CXXINCS  = -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include/c++"
+BIN      = Binary/VittorDtuConfig
+CXXFLAGS = $(CXXINCS) -m32 -mwindows -std=gnu++14
+CFLAGS   = $(INCS) -m32 -mwindows
+RM       = rm.exe -f
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before $(BIN) all-after
+
+clean: clean-custom
+	${RM} $(OBJ) $(BIN)
+
+$(BIN): $(OBJ)
+	$(CPP) $(LINKOBJ) -o $(BIN) $(LIBS)
+
+Object/Device.o: Source/Device.cpp
+	$(CPP) -c Source/Device.cpp -o Object/Device.o $(CXXFLAGS)
+
+Object/main.o: Source/main.cpp
+	$(CPP) -c Source/main.cpp -o Object/main.o $(CXXFLAGS)
+
+Object/Layout.o: Source/Layout.cpp
+	$(CPP) -c Source/Layout.cpp -o Object/Layout.o $(CXXFLAGS)
+
+Object/vittor_dtu_set_cpp_private.res: vittor_dtu_set_cpp_private.rc 
+	$(WINDRES) -i vittor_dtu_set_cpp_private.rc -F pe-i386 --input-format=rc -o Object/vittor_dtu_set_cpp_private.res -O coff  --include-dir ./ --include-dir ./Source --include-dir ./Binary
+

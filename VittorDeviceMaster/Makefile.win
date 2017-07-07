@@ -1,0 +1,39 @@
+# Project: VittorDeviceMaster
+# Makefile created by Dev-C++ 5.11
+
+CPP      = g++.exe -D__DEBUG__
+CC       = gcc.exe -D__DEBUG__
+WINDRES  = windres.exe
+RES      = Object/VittorDeviceMaster_private.res
+OBJ      = Object/Layout.o Object/main.o Object/cabinet.o $(RES)
+LINKOBJ  = Object/Layout.o Object/main.o Object/cabinet.o $(RES)
+LIBS     = -L"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib" -L"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/lib" -static-libgcc -lgdi32 -lopengl32 -lglu32 -g3
+INCS     = -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include"
+CXXINCS  = -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include/c++"
+BIN      = Binary/VittorDeviceMaster.exe
+CXXFLAGS = $(CXXINCS) -g3 -std=gnu++14
+CFLAGS   = $(INCS) -g3 -std=gnu11
+RM       = rm.exe -f
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before $(BIN) all-after
+
+clean: clean-custom
+	${RM} $(OBJ) $(BIN)
+
+$(BIN): $(OBJ)
+	$(CPP) $(LINKOBJ) -o $(BIN) $(LIBS)
+
+Object/Layout.o: Source/Layout.cpp
+	$(CPP) -c Source/Layout.cpp -o Object/Layout.o $(CXXFLAGS)
+
+Object/main.o: Source/main.cpp
+	$(CPP) -c Source/main.cpp -o Object/main.o $(CXXFLAGS)
+
+Object/cabinet.o: Source/cabinet.cpp
+	$(CPP) -c Source/cabinet.cpp -o Object/cabinet.o $(CXXFLAGS)
+
+Object/VittorDeviceMaster_private.res: VittorDeviceMaster_private.rc 
+	$(WINDRES) -i VittorDeviceMaster_private.rc --input-format=rc -o Object/VittorDeviceMaster_private.res -O coff  --include-dir ./Source
+

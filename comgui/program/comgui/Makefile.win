@@ -1,0 +1,40 @@
+# Project: comgui
+# Makefile created by Dev-C++ 5.11
+
+CPP      = g++.exe
+CC       = gcc.exe
+WINDRES  = windres.exe
+OBJ      = comgui/object/dframe.o comgui/object/item_lexer.o comgui/object/main.o comgui/object/chain.o comgui/object/comgui.o
+LINKOBJ  = comgui/object/dframe.o comgui/object/item_lexer.o comgui/object/main.o comgui/object/chain.o comgui/object/comgui.o
+LIBS     = -L"D:/apps/Dev-Cpp/MinGW64/lib" -L"D:/apps/Dev-Cpp/MinGW64/x86_64-w64-mingw32/lib" -static-libgcc -lgdi32 -lopengl32 -lglu32 -lgdi32 -luser32 -lopengl32 -lglu32 -m64 -mwindows
+INCS     = -I"D:/apps/Dev-Cpp/MinGW64/include" -I"D:/apps/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"D:/apps/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include"
+CXXINCS  = -I"D:/apps/Dev-Cpp/MinGW64/include" -I"D:/apps/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"D:/apps/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include" -I"D:/apps/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include/c++"
+BIN      = comgui/binary/comgui.exe
+CXXFLAGS = $(CXXINCS) -Ofast -m64 -mwindows -std=gnu++14 -std=gnu++14
+CFLAGS   = $(INCS) -Ofast -m64 -mwindows -std=gnu++14
+RM       = rm.exe -f
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before $(BIN) all-after
+
+clean: clean-custom
+	${RM} $(OBJ) $(BIN)
+
+$(BIN): $(OBJ)
+	$(CPP) $(LINKOBJ) -o $(BIN) $(LIBS)
+
+comgui/object/dframe.o: comgui/source/dframe.cpp
+	$(CPP) -c comgui/source/dframe.cpp -o comgui/object/dframe.o $(CXXFLAGS)
+
+comgui/object/item_lexer.o: comgui/source/item_lexer.cpp
+	$(CPP) -c comgui/source/item_lexer.cpp -o comgui/object/item_lexer.o $(CXXFLAGS)
+
+comgui/object/main.o: comgui/source/main.cpp
+	$(CPP) -c comgui/source/main.cpp -o comgui/object/main.o $(CXXFLAGS)
+
+comgui/object/chain.o: comgui/source/chain.cpp
+	$(CPP) -c comgui/source/chain.cpp -o comgui/object/chain.o $(CXXFLAGS)
+
+comgui/object/comgui.o: comgui/source/comgui.cpp
+	$(CPP) -c comgui/source/comgui.cpp -o comgui/object/comgui.o $(CXXFLAGS)

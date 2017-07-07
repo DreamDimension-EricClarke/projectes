@@ -1,0 +1,36 @@
+# Project: VittorSmartCardMaster
+# Makefile created by Dev-C++ 5.11
+
+CPP      = g++.exe
+CC       = gcc.exe
+WINDRES  = windres.exe
+RES      = Object/VittorSmartCardMaster_private.res
+OBJ      = Object/main.o Object/Layout.o $(RES)
+LINKOBJ  = Object/main.o Object/Layout.o $(RES)
+LIBS     = -L"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/lib32" -static-libgcc -lws2_32 -L"D:/Project/VittorSmartCardMaster/Library" -lgdi32 -lopengl32 -lglu32 -lws2_32 -lumf -m32
+INCS     = -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include"
+CXXINCS  = -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include/c++"
+BIN      = Binary/VittorSmartCardMaster.exe
+CXXFLAGS = $(CXXINCS) -m32 -std=gnu++14
+CFLAGS   = $(INCS) -m32 -std=gnu11
+RM       = rm.exe -f
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before $(BIN) all-after
+
+clean: clean-custom
+	${RM} $(OBJ) $(BIN)
+
+$(BIN): $(OBJ)
+	$(CPP) $(LINKOBJ) -o $(BIN) $(LIBS)
+
+Object/main.o: Source/main.cpp
+	$(CPP) -c Source/main.cpp -o Object/main.o $(CXXFLAGS)
+
+Object/Layout.o: Source/Layout.cpp
+	$(CPP) -c Source/Layout.cpp -o Object/Layout.o $(CXXFLAGS)
+
+Object/VittorSmartCardMaster_private.res: VittorSmartCardMaster_private.rc 
+	$(WINDRES) -i VittorSmartCardMaster_private.rc -F pe-i386 --input-format=rc -o Object/VittorSmartCardMaster_private.res -O coff  --include-dir D:/Project/VITTOR~3/Source
+

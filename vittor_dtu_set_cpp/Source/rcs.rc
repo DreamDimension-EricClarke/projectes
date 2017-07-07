@@ -1,0 +1,18 @@
+#include <windows.h>
+
+/*
+rcs.rc为程序引入vittor_dtu_set_cpp.exe.manifest
+起作用在于为Windows控件启动WindowsXP风格,
+XP风格随着运行环境Windows版本不同而改变,区别于
+Win95风格
+*/
+
+
+0    		ICON	"vittor.ico"
+1 			ICON	"red.ico"
+2     		ICON    "green.ico"
+3           BITMAP    "Socket.bmp"
+4           BITMAP    "HTTPD.bmp"
+5           BITMAP    "Message.bmp"
+
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "vittor_dtu_set_cpp.exe.manifest"

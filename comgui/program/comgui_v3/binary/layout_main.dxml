@@ -1,0 +1,107 @@
+<!-- layout_main.dxml文档描述了主窗口的画面布局 -->
+<!-- 布局语法:
+	元素:
+		layout	布局		应为布局文件的根元素 
+			特有属性: minimizebox(true) maxmizebox(true) icon(%s)
+			
+		text	文本控件	可编辑或不可编辑的文本(文本内容用元素内容定义) 
+			特有属性: align(left center right) multiline(true) readonly(true) text-size(%d)
+			
+		button	按钮控件	可以相应按钮的点击事件
+		
+		group	组框控件	把一系列相关的控件包含起来
+		
+		list	列表控件	静态的把项目序列显示出来可供选择 
+			特有属性: border(true) vscroll(true)
+			item	项目单元	列表控件的子项
+				特有属性: value(%s)
+		combobox组合框控件	有可编辑的文本框和可选择的下拉选单
+			option	选项单元	组合框控件的子项 
+				特有属性: value(%s)
+	属性规则:
+		共有属性:
+			x(%d) y(%d) width(%d) height(%d) caption(%s)
+		特殊属性:
+			name(%s)	name属性将控件的窗口句柄和窗口ID相关联,用于从线型列表相应控件消息 
+--> 
+<layout x='32' y='32' width='1024' height='720' caption='智能农业监测系统' minimizebox='true' icon='comgui'>
+	<text x='24' y='16' width='976' height='96' 
+	readonly='true' text-size='96' align='center'>智能农业监测系统</text> 
+
+	<text x='24' y='140' width='128' height='28'
+	readonly='true'>设备选单</text>
+	<list x='24' y='170' width='128' height='226' 
+	border='true' name='list_device'>
+		<item value='A园区'></item>
+		<item value='B园区'></item>
+		<item value='C园区'></item>
+		<item value='D园区'></item>
+		<item value='E园区'></item>
+	</list>
+	
+	<button x='24' y='400' width='128' height='28' 
+	caption='开始监测' name='button_start_stop'></button>
+	
+	<button x='24' y='460' width='128' height='28' 
+	caption='手动刷新' name='button_refresh'></button>
+	
+	<button x='24' y='520' width='128' height='28' 
+	caption='重置程序' name='button_reset'></button> 
+	
+	<button x='24' y='580' width='128' height='28' 
+	caption='传感控制' name='button_switch'></button> 
+	
+	<group x='160' y='128' width='512' height='512' caption='监测区'><!-- 112 -->
+		<group x='64' y='32' width='384' height='64' caption='温度数据'>
+			<text x='8' y='24' width='256' height='28'
+			readonly='true' name='text_temperature'>暂无数据</text> 
+		</group>
+		
+		<group x='64' y='104' width='384' height='64' caption='湿度数据'>
+			<text x='8' y='24' width='256' height='28'
+			readonly='true' name='text_humidity'>暂无数据</text> 
+		</group>
+
+		<group x='64' y='176' width='384' height='64' caption='烟雾数据'>
+			<text x='8' y='24' width='256' height='28'
+			readonly='true' name='text_smoke'>暂无数据</text> 
+		</group>
+				
+		<group x='64' y='248' width='384' height='64' caption='灌溉状态'>
+			<text x='8' y='24' width='256' height='28'
+			readonly='true' name='text_water'>暂无数据</text> 
+			
+			<button x='280' y='24' width='64' height='28' 
+			caption='灌溉控制' name='button_water'></button>
+			<!--
+			<button x='24' y='60' width='64' height='28' 
+			caption='开始灌溉' name='button_water_on'></button>
+
+			<button x='256' y='60' width='64' height='28' 
+			caption='结束灌溉' name='button_water_off'></button>
+			-->
+		</group>
+		
+		<group x='64' y='320' width='384' height='64' caption='土壤湿度'>
+			<text x='8' y='24' width='256' height='28'
+			readonly='true' name='text_humidity_mud'>暂无数据</text> 
+		</group>
+		
+	</group>
+	
+	<group x='680' y='128' width='320' height='256' caption='运行日志'>
+		<text x='24' y='24' width='254' height='208' 
+		multiline='true' readonly='true' name='text_log'>启动</text> 
+	</group>
+	
+	<group x='680' y='400' width='320' height='240' caption='串口参数'>
+		<text x='24' y='24' width='254' height='192'
+		multiline='true' readonly='true' name='text_parg' align='center'>尚未连接</text>
+	</group>
+	
+	<text x='24' y='650' width='512' height='20'
+	readonly='true' name='text_date' text-size='18' align='center'>0</text>
+	
+	<text x='680' y='650' width='256' height='20'
+	readonly='true' text-size='18' align='center'>沈阳航空航天大学版权所有</text>
+</layout>

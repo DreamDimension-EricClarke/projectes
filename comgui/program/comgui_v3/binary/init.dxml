@@ -1,0 +1,1 @@
+< comgui baudrate= '7' stopbits= '0' bytesize= '1' block= '1000' ></ comgui >

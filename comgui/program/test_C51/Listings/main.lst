@@ -1,0 +1,112 @@
+C51 COMPILER V9.54   MAIN                                                                  02/19/2017 16:31:48 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\apps\Keil\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\ma
+                    -in.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include <reg52.h>
+   2          
+   3          #define frequence 11059200UL    //使用22.1184M晶体
+   4          #define baudrate   9600UL       //波特率定义为9600
+   5                         
+   6          unsigned char zifu = 'a';   //待显示字符
+   7          unsigned char rcvbuf[32];
+   8          int ptr;
+   9          /*
+  10          void delay(unsigned char i)
+  11          {
+  12            unsigned char j,k;
+  13          
+  14            for(j=i; j>0; j--)
+  15              for(k=90; k>0; k--);
+  16          }*/
+  17          
+  18          void init(void)         //串口初始化
+  19          {
+  20   1        EA    = 0;          //暂时关闭中断
+  21   1        TMOD &= 0x0F;       //定时器1模式控制在高4位
+  22   1        TMOD |= 0x20;       //定时器1工作在模式2，自动重装模式
+  23   1        SCON  = 0x50;       //串口工作在模式1
+  24   1        TH1   = 256-frequence/(baudrate*12*16);  //计算定时器重装值
+  25   1        TL1   = 256-frequence/(baudrate*12*16);
+  26   1        PCON |= 0x80;       //串口波特率加倍
+  27   1        ES    = 1;          //串行中断允许
+  28   1        TR1   = 1;          //启动定时器1
+  29   1        REN   = 1;          //允许接收 
+  30   1        EA    = 1;          //允许中断
+  31   1      }
+  32          
+  33          void sdbyte(unsigned char d)  //发送一个字节的数据，形参d即为待发送数据。
+  34          {
+  35   1        SBUF = d;       //将数据写入到串口缓冲
+  36   1        while(!TI);     //等待发送完毕
+  37   1        TI = 0;
+  38   1      }
+  39          
+  40          void send( unsigned char* buf, int leng )
+  41          {
+  42   1        int i;
+  43   1        for( i = 0; i < leng; i++ )
+  44   1          sdbyte( buf[i] );
+  45   1      }
+  46          int recv(  unsigned char* buf )
+  47          {
+  48   1        int i;
+  49   1        REN = 0;
+  50   1        for( i = 0; i < ptr; i++ )
+  51   1          buf[i] = rcvbuf[i];
+  52   1        ptr = 0;
+  53   1        REN = 1;
+  54   1        return i;
+C51 COMPILER V9.54   MAIN                                                                  02/19/2017 16:31:48 PAGE 2   
+
+  55   1      }
+  56          void uart(void) interrupt 4 //串口发送中断
+  57          {
+  58   1        if(RI)
+  59   1        {
+  60   2          RI = 0;
+  61   2          rcvbuf[ptr++] = SBUF;
+  62   2        }
+  63   1      }
+  64          
+  65          void main( )
+  66          {
+  67   1        unsigned char cmd[32];
+  68   1        unsigned short addr;
+  69   1        init();
+  70   1        while( 1 )
+  71   1        {
+  72   2          while( ptr < 6 );
+  73   2          recv( cmd );
+  74   2          addr = cmd[1] + (((int)cmd[2])<<8);
+  75   2          cmd[0] = 0x3a;
+  76   2          cmd[4] = 1;
+  77   2          cmd[5] = 2;
+  78   2          cmd[6] = addr%2;
+  79   2          cmd[7] = (addr+1)%2;
+  80   2          cmd[8] = cmd[0] ^ cmd[1] ^ cmd[2] ^ cmd[3] ^ cmd[4] ^ cmd[5] ^ cmd[6] ^ cmd[7];
+  81   2          cmd[9] = 0x23;
+  82   2          send( cmd, 10 );
+  83   2        }
+  84   1        return;
+  85   1      }
+  86          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    282    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     35      42
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
