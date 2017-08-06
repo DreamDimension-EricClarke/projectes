@@ -18,10 +18,11 @@ num(_num), count(_count), state(_state) {
 CCabinet::CCabinet( ):
 commport(INVALID_HANDLE_VALUE) {
 	
-	//测试代码 
-	cabs.Push( SCab( 1, 12, 0 ) );
-	cabs.Push( SCab( 2, 5, 0 ) );
-	cabs.Push( SCab( 4, 16, 0 ) );
+	/*测试代码 
+	cabs.Push( SCab( 1, 12, 0b0101'0011 ) );
+	cabs.Push( SCab( 2, 5, 0b0011'0011 ) );
+	cabs.Push( SCab( 4, 16, 0b1000'0000 ) );
+	/**/
 }
 
 /*析构函数释放所有资源
@@ -46,6 +47,11 @@ bool CCabinet::OpenComm( string name, DWORD baudrate ) {
 		return false;
 	}
 	
+	/*测试代码
+	commport = (HANDLE)1;
+	return true; 
+	/**/
+	
 	commport = CreateFile( name.data(), GENERIC_READ|GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0 );
 	if( commport == INVALID_HANDLE_VALUE ) {
 		return false;
@@ -53,8 +59,8 @@ bool CCabinet::OpenComm( string name, DWORD baudrate ) {
 	
 	/*配置串口超时参数*/
 	COMMTIMEOUTS comm_timeout;
-	comm_timeout.ReadIntervalTimeout = 200;
-	comm_timeout.ReadTotalTimeoutConstant = 2000;
+	comm_timeout.ReadIntervalTimeout = 800;
+	comm_timeout.ReadTotalTimeoutConstant = 5000;
 	comm_timeout.ReadTotalTimeoutMultiplier = 0;
 	comm_timeout.WriteTotalTimeoutConstant = 2000;
 	comm_timeout.WriteTotalTimeoutMultiplier = 0;
@@ -130,6 +136,27 @@ int CCabinet::GetGateCount( int cabnum ) {
 	return count;
 }
 
+/*GetGateState函数返回当前模型中柜门个数
+########################################################################################
+参数:
+	int									指定柜子号码
+										号码不能为0 
+========================================================================================
+返回值:
+	int                                 柜门的状态 
+*/
+int CCabinet::GetGateState( int cabnum ) {
+	int state = 0;
+	cabs.ForEach( [&]( SCab& scab ){
+		if( scab.num == cabnum ) {
+			state = scab.state;
+			return false;
+		}
+		return true;
+	} );
+	return state;
+}
+
 /*QueryCount函数向下位机查询柜子的信息
 ########################################################################################
 参数:
@@ -142,6 +169,64 @@ int CCabinet::GetGateCount( int cabnum ) {
 */
 bool CCabinet::QueryInfo( int cabnum ) {
 	
+	DWORD count;
+	char cmd[2] = { 0x03, (char)cabnum };
+	char ret[128];
+	
+	layout.Log( "[日志]读取柜子信息" );
+	
+	if( !IsCommOpen() ) {
+		return false;
+	}
+	
+	//发送查询指令 
+	if( !WriteFile( commport, cmd, 2, &count, 0 ) ) {
+		layout.Log( "[错误]指令发送失败" );
+		return false;
+	}
+	
+	memset( ret, 0, 128 );
+	//读取反馈数据量 
+	if( !ReadFile( commport, ret, 2, &count, 0 ) ) {
+		layout.Log( "[错误]接收反馈指令错误" );
+		return false;
+	}
+	if( count < 2 ) {
+		layout.Log( "[错误]反馈指令长度错误" );
+		return false;
+	}
+	//读取反馈数据 
+	if( !ReadFile( commport, ret + 2, ret[1]*5, &count, 0 ) ) {
+		layout.Log( "[错误]接收反馈数据错误" );
+		return false;
+	}
+	if( count < ret[1]*5 ) {
+		layout.Log( "[错误]反馈数据长度从错误" );
+		return false;
+	}
+	
+	if( cabnum == 0 ) {
+		cabs.Clear();
+	}
+	
+	for( int ct = 0; ct < ret[1]; ct++ ) {
+		char *base = ret+2+ct*5;
+		SCab tcab( base[1], base[2], base[3]<<8+base[4] );
+		int pos = -1;
+		cabs.ForEach( [&]( SCab& icab ) {
+			if( icab.num == tcab.num ) {
+				cabs.GetIndex( icab, pos );
+				return false;
+			}
+			return true;
+		} );
+		if( pos >= 0 ) {
+			cabs.Remove( pos );
+		}
+		cabs.Push( tcab );
+	}
+	
+	return true;
 }
 
 /*SetGateCount函数用来设置下位机柜门个数 
@@ -166,7 +251,44 @@ bool CCabinet::SetGateCount( int cabnum, int gatecount ) {
 	bool								开门是否成功
 */
 bool CCabinet::OpenGate( int cabnum, int gatenum ) {
+	SCab *tag = 0;
+	cabs.ForEach( [&]( SCab& cab ) {
+		if( cab.num == cabnum ) {
+			tag = &cab;
+			return false;
+		}
+		return true;
+	} );
 	
+	if( tag == 0 ) {
+		return false;
+	}
+	
+	//计算被累加的门编号 
+	gatenum += (cabnum-1)*12;
+	cabs.ForEach( [&]( SCab& cab ) {
+		if( cab.num < cabnum ) {
+			gatenum +=  (cab.count>=12?(cab.count - 12):cab.count);
+		}
+		return true;
+	} );
+	
+	DWORD cnt;
+	char cmd[3] = { 0x02, (char)gatenum, 0x00 };
+	WriteFile( commport, cmd, 3, &cnt, 0 );
+	if( !ReadFile( commport, cmd, 2,  &cnt, 0 ) ) {
+		layout.Log( "[错误]接受反馈时出错" );
+		return false;
+	}
+	if( cnt < 2 or cmd[0] != 0x02 or cmd[1] != gatenum ) {
+		char buf[64]; 
+		layout.Log( "[错误]动作执行失败" );
+		sprintf( buf, "0x%2X 0x%2X", cmd[0], cmd[1] );
+		layout.Log( string(buf) );
+		
+		return false;
+	}
+	return true;
 }
 
 /*DrawCab函数绘制柜子模型
@@ -182,6 +304,7 @@ bool CCabinet::OpenGate( int cabnum, int gatenum ) {
 */
 void CCabinet::DrawCab( int cabnum ) {
 	char buf[32];
+	int gatestate = 0;
 	glColor3f( 0.75, 0.75, 0.75 );
 	glBegin( GL_LINE_STRIP );
 	glVertex2i( x, y );
@@ -219,7 +342,8 @@ void CCabinet::DrawCab( int cabnum ) {
 		glColor3f( 1.0f, 0.0f, 0.0f );
 		glRasterPos2i( x+width*0.35, y+height*0.5 );
 		DrawText( "柜号码无效" );
-	} else {	
+	} else {
+		gatestate = GetGateState( cabnum );
 		int col = count/2 + (count%2 == 0?0:1);
 		int dh = (height-8)/col;
 		if( dh >= width/2 ) {
@@ -248,7 +372,10 @@ void CCabinet::DrawCab( int cabnum ) {
 			int dx = x + width*0.5 - dh + i%2*dh;
 			int dy = y+8 + i/2*dh;
 			
-			glColor3ub( 245, 245, 245 );
+			if( ((gatestate>>i)&0x01) == 0 )
+				glColor3ub( 210, 255, 210 );
+			else
+				glColor3ub( 255, 210, 210 );
 			glBegin( GL_QUADS );
 			glVertex2i( dx+1, dy+1 );
 			glVertex2i( dx+dh-1, dy+1 );
@@ -276,10 +403,16 @@ void CCabinet::DrawCab( int cabnum ) {
 			glEnd();
 			
 			
-			if( bK < 0 ) {
-				glColor3ub( 240, 240, 240 );
+			if( bK < 0 ) { 		//鼠标左键被按下了 
+				if( ((gatestate>>(cabnum-1))&0x01) == 0 )
+					glColor3ub( 195, 255, 195 );
+				else
+					glColor3ub( 255, 195, 195 );
 			} else {
-				glColor3ub( 250, 250, 250 );
+				if( ((gatestate>>(cabnum-1))&0x01) == 0 )
+					glColor3ub( 225, 255, 225 );
+				else
+					glColor3ub( 255, 225, 225 );
 			}
 				glBegin( GL_QUADS );
 				glVertex2i( dx+1, dy+1 );
@@ -292,7 +425,7 @@ void CCabinet::DrawCab( int cabnum ) {
 				sprintf( buf, "%d号门", cabnum );
 				DrawText( string(buf) );
 		}
-	} 
+	}
 	
 	glColor3f( 0, 0, 0 );
 	glRasterPos2i( x+width*0.35, 570 );
@@ -317,7 +450,7 @@ int	CCabinet::CatchGate( int cabnum, POINTS pos ) {
 //	glRasterPos2i( x+width*0.35, 575 );
 //	sprintf( buf, "x:%d y:%d", pos.x, pos.y );
 //	DrawText( string(buf) );
-	if( count == 0 ) {
+	if( count == 0 or commport == INVALID_HANDLE_VALUE ) {
 		return 0;
 	}
 	int col = count/2 + (count%2 == 0?0:1);

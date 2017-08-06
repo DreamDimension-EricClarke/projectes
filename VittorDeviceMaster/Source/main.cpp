@@ -9,7 +9,7 @@ int			curcabnum = 1;
 HDC			hdc_main;
 HFONT		hFont_small;
 MSG 		global_msg;
-POINTS	pts; 
+POINTS		pts; 
 
 int main( int argc, char **argv ) {
 	hdc_main = GetWindowDC( layout.GetHandle( "主窗口" ) );
@@ -21,6 +21,7 @@ int main( int argc, char **argv ) {
 	cab.height = 480;
 	EnumCommPort();
 	CreateThread( 0, 0, RenderProc, 0, 0, 0 );
+	layout.Log( "[信息]应用程序启动" );
 	while( GetMessage( &global_msg, 0, 0, 0 ) ) {
 		TranslateMessage( &global_msg );
 		DispatchMessage( &global_msg );
@@ -31,6 +32,8 @@ int main( int argc, char **argv ) {
 
 LRESULT CALLBACK MainProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam ) {
 	switch( message ) {
+		case WM_CREATE:
+			break;
 		case WM_CTLCOLORSTATIC:
 			SetBkColor( (HDC)wParam, RGB( 255, 255, 255 ) );
 			SetTextColor( (HDC)wParam, RGB( 0, 0, 0 ) );
@@ -41,9 +44,24 @@ LRESULT CALLBACK MainProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
 		case WM_COMMAND:
 			layout.CallProc( (HWND)lParam, HIWORD(wParam) ) ;
 			break;
+		case WM_DEVICECHANGE:
+			EnumCommPort();
+			break;
 		case WM_MOUSEMOVE:
 			pts = MAKEPOINTS( lParam );
 			break;
+		case WM_LBUTTONUP: {
+			pts = MAKEPOINTS( lParam );
+			int gate = cab.CatchGate( curcabnum, pts );
+			if( gate != 0 ) {
+				char buf[64];
+				sprintf( buf, "[日志]打开%d号柜%d号门", curcabnum, gate );
+				layout.Log( string( buf ) );
+				cab.OpenGate( curcabnum, gate );
+				//cab.QueryInfo();
+			}
+			break;
+		}
 		default:
 			break;
 	}
@@ -56,19 +74,36 @@ LRESULT OnCommSwitch( HWND hwnd, WORD code ) {
 	}
 	
 	if( cab.IsCommOpen() ) {
+		layout.Log( "[日志]正在关闭串口" );
 		if( cab.CloseComm() ) {
+			layout.Log( "[日志]串口已关闭" );
 			SetWindowText( hwnd, "打开串口" );
 		}
+		layout.Log( "[日志]关闭失败" );
 	} else {
 		char buf[32];
 		DWORD baudrate;
 		memset( buf, 0, 32 );
 		GetWindowText( layout.GetHandle( "组合框_串口波特率" ), buf, 32 );
-		sscanf( buf, "%u", &baudrate );
+		if( sscanf( buf, "%u", &baudrate ) < 1 ) {
+			layout.Log( "[错误]请选择串口波特率" );
+			return 0;
+		}
 		memset( buf, 0, 32 );
 		GetWindowText( layout.GetHandle( "组合框_串口号码" ), buf, 32 );
+		if( strlen( buf ) == 0 ) {
+			layout.Log( "[错误]请选择串口号码" );
+			return 0; 
+		}
+		layout.Log( "[日志]正在打开串口" );
 		if( cab.OpenComm( buf, baudrate ) ) {
 			SetWindowText( hwnd, "关闭串口" );
+			layout.Log( "[日志]串口已打开" );
+			if( !cab.QueryInfo() ) {
+				layout.Log( "[错误]获取柜子状态失败" );
+			}
+		} else {
+			layout.Log( "[错误]串口打开失败" );
 		}
 	}
 }
@@ -140,8 +175,9 @@ void EnumCommPort( void ) {
 	dwName = sizeof(Name);
 	dwSizeofPortName = sizeof(szPortName);
 	do {
-		Status = RegEnumValue( hKey, dwIndex++, Name, &dwName, NULL, &Type, szPortName,
-		                       &dwSizeofPortName );
+		memset( szPortName, 0, 25 );
+		dwName = dwSizeofPortName = 25;
+		Status = RegEnumValue( hKey, dwIndex++, Name, &dwName, NULL, &Type, szPortName, &dwSizeofPortName );
 		if((Status == ERROR_SUCCESS)||(Status == ERROR_MORE_DATA)) {
 			SendMessage( hWnd, CB_ADDSTRING, 0, (LPARAM)szPortName );       // 串口字符串保存
 		}
