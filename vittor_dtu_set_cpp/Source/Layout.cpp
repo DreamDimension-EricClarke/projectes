@@ -42,7 +42,7 @@ CLayout::CLayout( WNDPROC proc ):
 	hwnd = CreateWindowEx(
 	           WS_EX_CLIENTEDGE,
 	           (char*)"vittor_dtu_set_cpp",
-	           (char*)"Î¢ÍØDTUÅäÖÃÆ÷",
+	           (char*)"Î¢ÍØDTUÅäÖÃÆ÷ v20170806",
 	           WS_OVERLAPPEDWINDOW|WS_VISIBLE|WS_POPUP,
 	           128, 24, 1132, 730,
 	           NULL, 0, m_hinst, 0 );
