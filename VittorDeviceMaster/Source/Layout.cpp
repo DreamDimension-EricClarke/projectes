@@ -60,9 +60,11 @@ void CLayout::Init( HFONT hFont ) {
 	CreateStatic( 165, 20, 55, 22, "波特率", "标题_串口波特率", "主窗口" );
 	CreateCombo( 225, 20, 80, 22, "", "组合框_串口波特率", "主窗口", CBS_DROPDOWNLIST );
 	CreateButton( 310, 20, 80, 22, "打开串口", "按钮_串口开关", "主窗口", 0, OnCommSwitch );
-	CreateButton( 20, 555, 80, 22, "上一柜", "按钮_上一柜", "主窗口", 0, OnLastCab );
-	CreateButton( 310, 555, 80, 22, "下一柜", "按钮_下一柜", "主窗口", 0, OnNextCab );
-	CreateEdit( 395, 20, 585, 555, "", "文本框_运行日志", "主窗口", ES_MULTILINE|ES_READONLY ); 
+	CreateButton( 20, 540, 80, 20, "设置柜参数", "按钮_设置柜参数", "主窗口", 0, OnSetCab );
+	CreateButton( 20, 560, 80, 20, "上一柜", "按钮_上一柜", "主窗口", 0, OnLastCab );
+	CreateButton( 310, 540, 80, 20, "刷新柜子状态", "按钮_刷新柜子状态", "主窗口", 0, OnRefresh );
+	CreateButton( 310, 560, 80, 20, "下一柜", "按钮_下一柜", "主窗口", 0, OnNextCab );
+	CreateEdit( 475, 20, 515, 560, "", "文本框_运行日志", "主窗口", ES_MULTILINE|ES_READONLY ); 
 	
 	m_widget.ForEach( [&](SWidget& widget ) {
 		SendMessage( widget.hwnd, WM_SETFONT, (WPARAM)hFont, TRUE );

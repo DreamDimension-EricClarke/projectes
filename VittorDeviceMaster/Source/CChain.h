@@ -52,14 +52,7 @@ class CChain {
 		/*仲裁函数用于等待并抢夺成员使用权限*/
 		void CatchBusy( ) {
 			char temp;
-			while( true ) {
-				while( m_busy != 0 );   //等待仲裁释放
-				m_busy += 1;            //抢夺仲裁
-				if( m_busy == 1 ) {
-					return;             //若抢夺成功则退出
-				}
-				//否则重新抢夺
-			}
+			return;
 		}
 	public:
 

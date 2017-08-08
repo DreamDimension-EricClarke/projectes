@@ -17,9 +17,12 @@ extern POINTS	pts;
 LRESULT OnCommSwitch( HWND hwnd, WORD code );
 LRESULT OnLastCab( HWND hwnd, WORD code );
 LRESULT OnNextCab( HWND hwnd, WORD code );
+LRESULT OnSetCab( HWND hwnd, WORD code );
+LRESULT OnRefresh( HWND hwnd, WORD code );
 
 
 LRESULT CALLBACK MainProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam );
+LRESULT CALLBACK SubWindowProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam );
 
 DWORD WINAPI RenderProc( LPVOID lpVoid );
 

@@ -3,6 +3,7 @@
 
 #include "cabinet.h"
 #include "main.h"
+#include <math.h>
 
 SCab::SCab( int _num, int _count, int _state ):
 num(_num), count(_count), state(_state) {
@@ -18,7 +19,7 @@ num(_num), count(_count), state(_state) {
 CCabinet::CCabinet( ):
 commport(INVALID_HANDLE_VALUE) {
 	
-	/*测试代码 
+	/*测试代码
 	cabs.Push( SCab( 1, 12, 0b0101'0011 ) );
 	cabs.Push( SCab( 2, 5, 0b0011'0011 ) );
 	cabs.Push( SCab( 4, 16, 0b1000'0000 ) );
@@ -223,7 +224,12 @@ bool CCabinet::QueryInfo( int cabnum ) {
 		if( pos >= 0 ) {
 			cabs.Remove( pos );
 		}
-		cabs.Push( tcab );
+		for( pos = 0; pos < cabs.Count(); pos++ ) {
+			if( cabs[pos].num > tcab.num ) {
+				break;
+			}
+		}
+		cabs.Insert( tcab, pos );
 	}
 	
 	return true;
@@ -237,7 +243,39 @@ bool CCabinet::QueryInfo( int cabnum ) {
 	int gatecount						柜门个数 
 */
 bool CCabinet::SetGateCount( int cabnum, int gatecount ) {
+	DWORD count;
+	unsigned char cmd[4] = { 0x04, 0xff, (unsigned char)cabnum, (unsigned char)gatecount };
+	char ret[4];
 	
+	layout.Log( "[日志]设置柜子门数量" );
+	
+	if( !IsCommOpen() or cabnum <= 0 or gatecount <= 1 ) {
+		return false;
+	}
+	
+	//发送查询指令 
+	if( !WriteFile( commport, cmd, 4, &count, 0 ) ) {
+		layout.Log( "[错误]指令发送失败" );
+		return false;
+	}
+	
+	memset( ret, 0, 128 );
+	//读取反馈数据量 
+	if( !ReadFile( commport, ret, 4, &count, 0 ) ) {
+		layout.Log( "[错误]接收反馈指令错误" );
+		return false;
+	}
+	if( count < 4 ) {
+		layout.Log( "[错误]反馈指令长度错误" );
+		return false;
+	}
+	if( ret[3] == 0 )  {
+		layout.Log( "[错误]设置失败" );
+		return false;
+	} else {
+		layout.Log( "[正确]设置成功" );
+		return true;
+	}
 }
 
 /*OpenGate函数打开指定柜子的指定柜门
@@ -268,7 +306,7 @@ bool CCabinet::OpenGate( int cabnum, int gatenum ) {
 	gatenum += (cabnum-1)*12;
 	cabs.ForEach( [&]( SCab& cab ) {
 		if( cab.num < cabnum ) {
-			gatenum +=  (cab.count>=12?(cab.count - 12):cab.count);
+			gatenum += cab.count - 12;
 		}
 		return true;
 	} );
@@ -288,6 +326,7 @@ bool CCabinet::OpenGate( int cabnum, int gatenum ) {
 		
 		return false;
 	}
+	layout.Log( "[正确]操作成功" );
 	return true;
 }
 
@@ -472,5 +511,218 @@ int	CCabinet::CatchGate( int cabnum, POINTS pos ) {
 		rel = 0;
 	}
 	return rel;
+}
+
+/*DrawList函数绘制柜体列表
+########################################################################################
+参数:
+	------------------------------------------------------------------------------------
+========================================================================================
+返回值: 
+*/
+void CCabinet::DrawList( void ) {
+	char buf[32];
+	int cabnum = CatchList( pts );
+	glColor3f( 0.75, 0.75, 0.75 );
+	glBegin( GL_LINE_STRIP );
+	glVertex2i( list_x, list_y );
+	glVertex2i( list_x+list_width, list_y );
+	glVertex2i( list_x+list_width, list_y+list_height );
+	glVertex2i( list_x, list_y+list_height );
+	glVertex2i( list_x, list_y );
+	glEnd();
+	
+	glBegin( GL_QUADS );
+	if( pts.x >= list_x and pts.x <= list_x+list_width and pts.y >= list_y and pts.y <= list_y+25 ) {
+		if( GetKeyState( VK_LBUTTON ) < 0 ) {
+			glColor3ub( 220, 220, 220 );
+		} else {
+			glColor3ub( 250, 250, 250 );
+		}
+	} else {
+		glColor3ub( 240, 240, 240 );
+	}
+	glVertex2i( list_x+1, list_y+1 );
+	glVertex2i( list_x+list_width-1, list_y+1 );
+	glVertex2i( list_x+list_width-1, list_y+25-1 );
+	glVertex2i( list_x+1, list_y+25-1 );
+	
+	
+	if( pts.x >= list_x and pts.x <= list_x+list_width and pts.y >= list_y+list_height-25 and pts.y <= list_y+list_height ) {
+		if( GetKeyState( VK_LBUTTON ) < 0 ) {
+			glColor3ub( 195, 195, 195 );
+		} else {
+			glColor3ub( 235, 235, 235 );
+		}
+	} else {
+		glColor3ub( 215, 215, 215 );
+	}
+	glVertex2i( list_x+1, list_y+list_height-1 );
+	glVertex2i( list_x+list_width-1, list_y+list_height-1 );
+	glVertex2i( list_x+list_width-1, list_y+list_height-25+1 );
+	glVertex2i( list_x+1, list_y+list_height-25+1 );
+	glEnd();
+	
+	glColor3ub( 115, 115, 115 );
+	glBegin( GL_LINE_STRIP );
+	glVertex2i( list_x+1, list_y+1 );
+	glVertex2i( list_x+list_width-1, list_y+1 );
+	glVertex2i( list_x+list_width-1, list_y+25-1 );
+	glVertex2i( list_x+1, list_y+25-1 );
+	glEnd();
+	
+	glBegin( GL_LINE_STRIP );
+	glVertex2i( list_x+1, list_y+list_height-1 );
+	glVertex2i( list_x+list_width-1, list_y+list_height-1 );
+	glVertex2i( list_x+list_width-1, list_y+list_height-25+1 );
+	glVertex2i( list_x+1, list_y+list_height-25+1 );
+	glEnd();
+	
+	glBegin( GL_POLYGON );
+	glColor3ub( 255, 255, 255 );
+	glVertex2i( list_x+10, list_y+23 );
+	glVertex2i( list_x+10, list_y+18 );
+	glVertex2i( list_x+list_width/2, list_y+3 );
+	glVertex2i( list_x+list_width/2, list_y+8 );
+	glEnd();
+	glBegin( GL_POLYGON );
+	glColor3ub( 255, 255, 255 );
+	glVertex2i( list_x+list_width-10, list_y+23 );
+	glVertex2i( list_x+list_width-10, list_y+18 );
+	glVertex2i( list_x+list_width/2, list_y+3 );
+	glVertex2i( list_x+list_width/2, list_y+8 );
+	glEnd();
+	glBegin( GL_POLYGON );
+	glColor3ub( 255, 255, 255 );
+	glVertex2i( list_x+10, list_y+list_height-23 );
+	glVertex2i( list_x+10, list_y+list_height-18 );
+	glVertex2i( list_x+list_width/2, list_y+list_height-3 );
+	glVertex2i( list_x+list_width/2, list_y+list_height-8 );
+	glEnd();
+	glBegin( GL_POLYGON );
+	glColor3ub( 255, 255, 255 );
+	glVertex2i( list_x+list_width-10, list_y+list_height-23 );
+	glVertex2i( list_x+list_width-10, list_y+list_height-18 );
+	glVertex2i( list_x+list_width/2, list_y+list_height-3 );
+	glVertex2i( list_x+list_width/2, list_y+list_height-8 );
+	glEnd();
+	
+	
+	//int tagcab = CatchList( pts );
+	for( int off = 0; off < 4; off++ ) {
+		SCab* pcab = cabs.GetPointer( list_offset + off );
+		if( pcab != 0 ) {
+			if( curcabnum == pcab->num )
+				glColor3ub( 215, 215, 215 );
+			else
+				glColor3ub( 195, 195, 195 ) ;
+			
+			glBegin( GL_QUADS );
+			glVertex2i( list_x+4, list_y+25+off*100+10 );
+			glVertex2i( list_x+list_width-4, list_y+25+off*100+10 );
+			glVertex2i( list_x+list_width-4, list_y+25+off*100+90 );
+			glVertex2i( list_x+4, list_y+25+off*100+90 );
+			glEnd();
+			
+			char buf[64];
+			glColor3ub( 255, 255, 255 );
+			glRasterPos2i( list_x+25, list_y+25+off*100+35 );
+			sprintf( buf, "%d号柜", pcab->num );
+			DrawText( buf );
+			glRasterPos2i( list_x+25, list_y+25+off*100+55 );
+			sprintf( buf, "%d门", pcab->count );
+			DrawText( buf );
+			if( curcabnum == pcab->num ) {
+				glColor3ub( 255, 0, 0 );
+				glBegin( GL_POLYGON );
+				glVertex2i( list_x, list_y+25+off*100+48 );
+				glVertex2i( list_x, list_y+25+off*100+52 );
+				glVertex2i( list_x+20, list_y+25+off*100+52 );
+				glVertex2i( list_x+20, list_y+25+off*100+48 );
+				glEnd();
+			}
+		}
+	}
+}
+
+/*CatchCab函数从鼠标相对于窗口的坐标抓取一个柜体
+#########################################################################################
+参数:
+	POINTS pos							鼠标坐标
+=========================================================================================
+返回值:
+	int									柜体编号
+*/
+int CCabinet::CatchList( POINTS pos ) {
+	int tag = 0;
+	if( pos.x >= list_x and pos.x <= list_x+list_width and pos.y >= list_y and pos.y <= list_y+list_height ) {
+		tag = (pos.y-list_y-25)/100 + list_offset;
+		if( tag >= cabs.Count() ) {
+			tag = 0;
+		} else {
+			tag = cabs[tag].num;
+		}
+	}
+	return tag;
+}
+
+/*GetLastCab函数从列表中获取目标柜号相邻的柜号
+########################################################################################
+参数:
+	int cabnum							基准柜号
+========================================================================================
+返回值:
+	int 								若失败则返回0,成功则返回新的柜子号码
+*/
+int CCabinet::GetLastCab( int cabnum ) {
+	int ncab = -1;
+	for( int i = cabnum-1; i > 0; i-- ) {
+		cabs.ForEach( [&]( SCab& cab ) {
+			if( cab.num == i ) {
+				ncab = cab.num;
+				return false;
+			}
+			return true;
+		} );
+		if( ncab != -1 ) {
+			break; 
+		}
+	}
+	return ncab;
+}
+
+/*GetNextCab函数从列表中获取目标柜号相邻的柜号
+########################################################################################
+参数:
+	int cabnum							基准柜号
+========================================================================================
+返回值:
+	int 								若失败则返回0,成功则返回新的柜子号码
+*/
+int CCabinet::GetNextCab( int cabnum ) {
+	int ncab = -1;
+	for( int i = cabnum+1; i < 240; i++ ) {
+		cabs.ForEach( [&]( SCab& cab ) {
+			if( cab.num == i ) {
+				ncab = cab.num;
+				return false;
+			}
+			return true;
+		} );
+		if( ncab != -1 ) {
+			break; 
+		}
+	}
+	return ncab;
+}
+/*GetCabCount函数获取柜子总数 
+########################################################################################
+参数:
+========================================================================================
+返回值:
+	int 								若失败则返回0,成功则返回柜子总数 
+*/
+int CCabinet::GetCabCount( void ) {
+	return cabs.Count();
 }
 #endif
