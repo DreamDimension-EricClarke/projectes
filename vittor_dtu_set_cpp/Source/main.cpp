@@ -4,6 +4,9 @@
 #include <wingdi.h>
 #include <string.h>
 #include "main.h"
+/**
+±‡“Îª∑æ≥ :DevC++ 5.11 MinGW 
+*/
 
 CLayout layout( MainProc );
 CDevice device;
@@ -334,6 +337,8 @@ void EnumCommPort( void ) {
 	dwName = sizeof(Name);
 	dwSizeofPortName = sizeof(szPortName);
 	do {
+		dwName = dwSizeofPortName = 25;
+		memset( szPortName, 0, 25 );
 		Status = RegEnumValue( hKey, dwIndex++, Name, &dwName, NULL, &Type, szPortName,
 		                       &dwSizeofPortName );
 		if((Status == ERROR_SUCCESS)||(Status == ERROR_MORE_DATA)) {
