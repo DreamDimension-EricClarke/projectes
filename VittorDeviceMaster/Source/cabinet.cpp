@@ -249,7 +249,7 @@ bool CCabinet::SetGateCount( int cabnum, int gatecount ) {
 	
 	layout.Log( "[日志]设置柜子门数量" );
 	
-	if( !IsCommOpen() or cabnum <= 0 or gatecount <= 1 ) {
+	if( !IsCommOpen() or cabnum <= 0 or gatecount < 1 ) {
 		return false;
 	}
 	
@@ -259,7 +259,7 @@ bool CCabinet::SetGateCount( int cabnum, int gatecount ) {
 		return false;
 	}
 	
-	memset( ret, 0, 128 );
+	memset( ret, 0, 4 );
 	//读取反馈数据量 
 	if( !ReadFile( commport, ret, 4, &count, 0 ) ) {
 		layout.Log( "[错误]接收反馈指令错误" );
@@ -272,10 +272,10 @@ bool CCabinet::SetGateCount( int cabnum, int gatecount ) {
 	if( ret[3] == 0 )  {
 		layout.Log( "[错误]设置失败" );
 		return false;
-	} else {
-		layout.Log( "[正确]设置成功" );
-		return true;
 	}
+	layout.Log( "[正确]设置成功" );
+	return true;
+	
 }
 
 /*OpenGate函数打开指定柜子的指定柜门

@@ -1,6 +1,8 @@
 #ifndef __main_cpp__
 #define __main_cpp__
 #include "main.h"
+#include <time.h>
+#include <winuser.h>
 #include <iostream>
 /**
 编译环境:
@@ -21,13 +23,16 @@ HDC			hdc_main;
 HFONT		hFont_small;
 MSG 		global_msg;
 POINTS		pts; 
-HWND		hedit_num;
 HWND		hwnd_sub = 0;
+HWND		hedit_num;
+DWORD		FontHeight = 14;
+HFONT		FontLog;
 
 int main( int argc, char **argv ) {
 	hdc_main = GetWindowDC( layout.GetHandle( "主窗口" ) );
-	hFont_small = CreateFont( 14, 6, 0, 0, 200, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, PROOF_QUALITY, VARIABLE_PITCH, "宋体" );
-	layout.Init( hFont_small );
+	hFont_small = CreateFont( FontHeight, FontHeight/2-1, 0, 0, 200, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, PROOF_QUALITY, VARIABLE_PITCH, "宋体" );
+	FontLog = CreateFont( FontHeight, FontHeight/2-1, 0, 0, 200, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, PROOF_QUALITY, VARIABLE_PITCH, "宋体" );
+	layout.Init( hFont_small, FontLog );
 	cab.x = 20;
 	cab.y = 50;
 	cab.width = 370;
@@ -39,7 +44,7 @@ int main( int argc, char **argv ) {
 	cab.list_offset = 0;
 	EnumCommPort();
 	CreateThread( 0, 0, RenderProc, 0, 0, 0 );
-	layout.Log( "[信息]应用程序启动 v20170808" );
+	layout.Log( "[信息]应用程序启动 v20170815" );
 	
 	//注册弹窗窗口类 
 	WNDCLASS wcls;
@@ -49,7 +54,7 @@ int main( int argc, char **argv ) {
 	wcls.hIcon = LoadIcon( NULL, IDI_APPLICATION );
 	wcls.hInstance = GetModuleHandle( 0 );
 	wcls.lpfnWndProc = SubWindowProc;
-	wcls.style = CS_NOCLOSE | CS_OWNDC;
+	wcls.style = CS_OWNDC;
 	wcls.lpszClassName = (char*)"sub_window_class";
 	if( !RegisterClass( &wcls ) ) {
 		MessageBox( layout.GetHandle("主窗口"), "注册子窗口类失败", "错误", MB_OK );
@@ -82,12 +87,12 @@ LRESULT CALLBACK MainProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
 			EnumCommPort();
 			break;
 		case WM_MOUSEMOVE:
-			pts = MAKEPOINTS( lParam );
+			//pts = MAKEPOINTS( lParam );
 			break;
 		case WM_LBUTTONUP: {
 			if( hwnd_sub != 0 )
 				break;
-			pts = MAKEPOINTS( lParam );
+			//pts = MAKEPOINTS( lParam );
 			int gate = cab.CatchGate( curcabnum, pts );
 			int num = cab.CatchList( pts );
 			if( gate != 0 ) {
@@ -120,26 +125,26 @@ LRESULT CALLBACK MainProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
 }
 
 LRESULT CALLBACK SubWindowProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam ) {
-	char buffer[1024];
-	memset( buffer, 0, 1024 );
 	switch( message ) {
 		case WM_COMMAND: {
-			GetWindowText( (HWND)lParam, buffer, 1024 );
+			char buffer[32];
+			GetWindowText( (HWND)lParam, buffer, 32 );
 			if( !strcmp( buffer, "取消" ) and HIWORD(wParam) == BN_CLICKED ) {
-				DestroyWindow( hwnd_sub );
+				DestroyWindow( hwnd );
 				PostQuitMessage( 0 );
 				break;
 			} else if( !strcmp( buffer, "确定" ) and HIWORD(wParam) == BN_CLICKED ) {
-				memset( buffer, 0, 1024 );
-				GetWindowText( hedit_num, buffer, 1024 );
+				memset( buffer, 0, 32 );
+				GetWindowText( hedit_num, buffer, 32 );
 				int count;
 				if( sscanf( buffer, "%d", &count ) < 1 ) {
 					MessageBox(  layout.GetHandle("主窗口"),  "请输入正确的柜门数量", "错误", MB_OK );
 					break;
 				}
 				cab.SetGateCount( curcabnum, count );
-				DestroyWindow( hwnd_sub );
+				DestroyWindow( hwnd );
 				PostQuitMessage( 0 );
+				break;
 			}
 			break;
 		}
@@ -238,6 +243,7 @@ LRESULT OnSetCab( HWND hwnd, WORD code ) {
 		TranslateMessage( &msg );
 		DispatchMessage( &msg );
 	}
+	layout.Log( "[日志]配置过程结束" );
 	cab.QueryInfo( curcabnum );
 	hwnd_sub = 0;
 	return 0;
@@ -253,6 +259,49 @@ LRESULT OnRefresh( HWND hwnd, WORD code ) {
 	cab.QueryInfo( curcabnum );
 }
 
+LRESULT OnFontUp( HWND hwnd, WORD code ) {
+	if( code != BN_CLICKED ) {
+		return 0;
+	}
+	FontHeight += 2;
+	HFONT hf = CreateFont( FontHeight, FontHeight/2-1, 0, 0, 200, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, PROOF_QUALITY, VARIABLE_PITCH, "宋体" );
+	//layout.SetFont( hf );
+	SendMessage( layout.GetHandle("文本框_运行日志"), WM_SETFONT, (WPARAM)hf, TRUE );
+	DeleteObject( (HGDIOBJ)FontLog );
+	FontLog = hf;
+	return 0;
+}
+LRESULT OnFontDown( HWND hwnd, WORD code ) {
+	if( code != BN_CLICKED ) {
+		return 0;
+	}
+	FontHeight -= 2;
+	HFONT hf = CreateFont( FontHeight, FontHeight/2-1, 0, 0, 200, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, PROOF_QUALITY, VARIABLE_PITCH, "宋体" );
+	//layout.SetFont( hf );
+	SendMessage( layout.GetHandle("文本框_运行日志"), WM_SETFONT, (WPARAM)hf, TRUE );
+	DeleteObject( (HGDIOBJ)FontLog );
+	FontLog = hf;
+	return 0;
+}
+LRESULT OnSaveLog( HWND hwnd, WORD code ) {
+	if( code != BN_CLICKED ) {
+		return 0;
+	}
+	time_t t = time(0);
+	tm* pt =  localtime(&t);
+	char buf[128];
+	sprintf( buf, "vittor_%d-%d-%d %d.%d.%d.txt", pt->tm_year+1900, pt->tm_mon+1, pt->tm_mday, pt->tm_hour, pt->tm_min, pt->tm_sec );
+	layout.SaveLog( string(buf) );
+	return 0;
+}
+LRESULT OnClearLog( HWND hwnd, WORD code ) {
+	if( code != BN_CLICKED ) {
+		return 0;
+	}
+	layout.ClearLog();
+	return 0;
+}
+
 DWORD WINAPI RenderProc( LPVOID lpVoid ) {
 	HWND hwnd = layout.GetHandle( "主窗口" );
 	HDC hdc = GetDC( hwnd );
@@ -260,6 +309,7 @@ DWORD WINAPI RenderProc( LPVOID lpVoid ) {
 	HGLRC hrc = 0;
 	PIXELFORMATDESCRIPTOR pfd;
 	int iFormat;
+	POINT pt;
 	
 	memset( &pfd, 0, sizeof(pfd) );
 	pfd.cColorBits = 32;
@@ -290,10 +340,14 @@ DWORD WINAPI RenderProc( LPVOID lpVoid ) {
 	glTranslatef( -1.0f, 1.0f, 0.0f );
 	glScalef( 2.0/(rect.right-rect.left), -2.0/(rect.bottom-rect.top), 1.0 );
 	while( true ) {
+		GetCursorPos( &pt );
+		ScreenToClient( hwnd, &pt );
+		pts.x = pt.x;
+		pts.y = pt.y; 
+		
 		glClear( GL_COLOR_BUFFER_BIT );
 		cab.DrawCab( curcabnum );
 		cab.DrawList();
-		
 		SwapBuffers( hdc );
 	}
 }

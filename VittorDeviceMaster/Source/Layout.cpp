@@ -53,7 +53,7 @@ CLayout::CLayout( WNDPROC proc ):
 CLayout::~CLayout( void ) {
 }
 
-void CLayout::Init( HFONT hFont ) {
+void CLayout::Init( HFONT hFont, HFONT hFlog ) {
 	HWND hwnd;
 	CreateStatic( 20, 20, 55, 22, "串口号码", "标题_串口号码", "主窗口" );
 	CreateCombo( 80, 20, 80, 22, "", "组合框_串口号码", "主窗口", CBS_DROPDOWNLIST );
@@ -64,12 +64,17 @@ void CLayout::Init( HFONT hFont ) {
 	CreateButton( 20, 560, 80, 20, "上一柜", "按钮_上一柜", "主窗口", 0, OnLastCab );
 	CreateButton( 310, 540, 80, 20, "刷新柜子状态", "按钮_刷新柜子状态", "主窗口", 0, OnRefresh );
 	CreateButton( 310, 560, 80, 20, "下一柜", "按钮_下一柜", "主窗口", 0, OnNextCab );
-	CreateEdit( 475, 20, 515, 560, "", "文本框_运行日志", "主窗口", ES_MULTILINE|ES_READONLY ); 
+	CreateEdit( 475, 20, 515, 510, "", "文本框_运行日志", "主窗口", ES_MULTILINE|ES_READONLY|ES_AUTOVSCROLL|WS_VSCROLL );
+	CreateButton( 475, 540, 80, 20, "清空日志", "按钮_清空日志", "主窗口", 0, OnClearLog );
+	CreateButton( 475, 560, 80, 20, "保存日志", "按钮_清空日志", "主窗口", 0, OnSaveLog );
+	CreateButton( 910, 540, 80, 20, "字体+", "按钮_字体+", "主窗口", 0, OnFontUp );
+	CreateButton( 910, 560, 80, 20, "字体-", "按钮_字体-", "主窗口", 0, OnFontDown );
 	
 	m_widget.ForEach( [&](SWidget& widget ) {
 		SendMessage( widget.hwnd, WM_SETFONT, (WPARAM)hFont, TRUE );
 		return true;
 	});
+	SendMessage( layout.GetHandle("文本框_运行日志"), WM_SETFONT, (WPARAM)hFlog, TRUE );
 	
 	hwnd = GetHandle( "组合框_串口波特率" );
 	SendMessage( hwnd, CB_ADDSTRING, 0, (LPARAM)"1200" );
@@ -85,7 +90,14 @@ void CLayout::Init( HFONT hFont ) {
 	SendMessage( hwnd, CB_ADDSTRING, 0, (LPARAM)"230400" );
 	SendMessage( hwnd, CB_ADDSTRING, 0, (LPARAM)"460800" );
 	SendMessage( hwnd, CB_ADDSTRING, 0, (LPARAM)"921600" );
-	SendMessage( hwnd, CB_SETCURSEL, 0, 0 );
+	SendMessage( hwnd, CB_SETCURSEL, (WPARAM)SendMessage( hwnd, CB_FINDSTRING, 0, (LPARAM)"115200" ), 0 );
+}
+
+void CLayout::SetFont( HFONT hFont ) {
+	m_widget.ForEach( [&](SWidget& widget ) {
+		SendMessage( widget.hwnd, WM_SETFONT, (WPARAM)hFont, TRUE );
+		return true;
+	});
 }
 
 HWND CLayout::GetHandle( HMENU ID ) {
@@ -482,8 +494,29 @@ bool CLayout::CreateScroll( DWORD x, DWORD y, DWORD width, DWORD height, const c
 
 void CLayout::Log( const string& value ) {
 	HWND hWnd = GetHandle( "文本框_运行日志" );
-	static string logstr;
 	logstr += value + string("\r\n");
+	SetWindowText( hWnd, logstr.data() );
+	SendMessage( hWnd, EM_SCROLL, SB_BOTTOM, 0 );
+}
+
+bool CLayout::SaveLog( string filename ) {
+	HWND hWnd = GetHandle( "文本框_运行日志" );
+	HANDLE hFile = CreateFile( filename.data(), GENERIC_WRITE, 0, 0, OPEN_ALWAYS, 0, 0 );
+	if( hFile == INVALID_HANDLE_VALUE ) {
+		return false;
+	}
+	DWORD dwWrite;
+	if( !WriteFile( hFile, logstr.data(), logstr.size(), &dwWrite, 0 ) ) {
+		CloseHandle( hFile );
+		return false;
+	}
+	CloseHandle( hFile );
+	return true;
+}
+
+void CLayout::ClearLog() {
+	logstr.clear();
+	HWND hWnd = GetHandle( "文本框_运行日志" );
 	SetWindowText( hWnd, logstr.data() );
 	SendMessage( hWnd, EM_SCROLL, SB_BOTTOM, 0 );
 }

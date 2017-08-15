@@ -7,12 +7,12 @@ WINDRES  = windres.exe
 RES      = Object/VittorDeviceMaster_private.res
 OBJ      = Object/Layout.o Object/main.o Object/cabinet.o $(RES)
 LINKOBJ  = Object/Layout.o Object/main.o Object/cabinet.o $(RES)
-LIBS     = -L"D:/apps/Dev-Cpp/MinGW64/lib32" -L"D:/apps/Dev-Cpp/MinGW64/x86_64-w64-mingw32/lib32" -static-libgcc -lpsapi -lgdi32 -lopengl32 -lglu32 -m32
+LIBS     = -L"D:/apps/Dev-Cpp/MinGW64/lib32" -L"D:/apps/Dev-Cpp/MinGW64/x86_64-w64-mingw32/lib32" -static-libgcc -lpsapi -lgdi32 -lopengl32 -lglu32 -m32 -mwindows
 INCS     = -I"D:/apps/Dev-Cpp/MinGW64/include" -I"D:/apps/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"D:/apps/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include"
 CXXINCS  = -I"D:/apps/Dev-Cpp/MinGW64/include" -I"D:/apps/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"D:/apps/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include" -I"D:/apps/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include/c++"
 BIN      = Binary/VittorDeviceMaster.exe
-CXXFLAGS = $(CXXINCS) -m32 -std=gnu++14
-CFLAGS   = $(INCS) -m32 -std=gnu11
+CXXFLAGS = $(CXXINCS) -m32 -mwindows -std=gnu++14
+CFLAGS   = $(INCS) -m32 -mwindows -std=gnu11
 RM       = rm.exe -f
 
 .PHONY: all all-before all-after clean clean-custom

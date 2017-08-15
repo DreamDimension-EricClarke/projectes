@@ -13,12 +13,17 @@ extern CCabinet cab;
 extern int		curcabnum;
 extern MSG 		global_msg;
 extern POINTS	pts; 
+extern DWORD	FontHeight;
 
 LRESULT OnCommSwitch( HWND hwnd, WORD code );
 LRESULT OnLastCab( HWND hwnd, WORD code );
 LRESULT OnNextCab( HWND hwnd, WORD code );
 LRESULT OnSetCab( HWND hwnd, WORD code );
 LRESULT OnRefresh( HWND hwnd, WORD code );
+LRESULT OnFontUp( HWND hwnd, WORD code );
+LRESULT OnFontDown( HWND hwnd, WORD code );
+LRESULT OnSaveLog( HWND hwnd, WORD code );
+LRESULT OnClearLog( HWND hwnd, WORD code );
 
 
 LRESULT CALLBACK MainProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam );

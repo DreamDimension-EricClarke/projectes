@@ -24,12 +24,15 @@ class CLayout {
 		CChain<SWidget>     m_widget;   		//控件列表,第一个元素永远是主窗口
 		WNDPROC             m_proc;     		//主窗口应有的消息过程
 		HINSTANCE           m_hinst;    		//应用程序实例
+		string logstr;							//日志字符串 
 	private:
 		friend LRESULT CALLBACK GroupProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam );
 	public:
 		CLayout( WNDPROC );
 		~CLayout( void );
-		void Init( HFONT hFont );
+		void Init( HFONT hFont, HFONT hFlog );
+		
+		void SetFont( HFONT hFont );
 		
 		HWND GetHandle( HMENU ID );
 		HWND GetHandle( string name );
@@ -62,6 +65,8 @@ class CLayout {
 		bool CreateScroll( DWORD x, DWORD y, DWORD width, DWORD height, const char* caption, const string& name, const string& parent, UINT  addition = 0, WDGPROC proc = 0 );
 		
 		void Log( const string& value );
+		bool SaveLog( string filename );
+		void ClearLog();
 };
 
 #endif
